@@ -4,50 +4,83 @@ import pyomo.environ as pyo
 from pyomo.opt import SolverFactory
 import os
 import json
+import matplotlib.pyplot as plt
+import networkx as nx
 
-# Directory where data files are stored
-data_directory = 'problem_instances'
+# Find all JSON files named 'problem_instance_*.json' in subdirectories
+data_files = []
+for root, dirs, files in os.walk('.'):
+    for file in files:
+        if file.startswith('problem_instance_') and file.endswith('.json'):
+            data_files.append(os.path.join(root, file))
 
-# List of data files to process
-data_files = [f for f in os.listdir(data_directory) if f.endswith('.json')]
-data_files.sort()  # Sort files to process them in order
+data_files.sort()
 
 # Solver to use
 solver_name = 'gurobi'  # Replace with your preferred solver
 
+# Function to flatten nested dictionaries
+def flatten_nested_dict(nested_dict):
+    flat_dict = {}
+    for outer_key in nested_dict:
+        for inner_key in nested_dict[outer_key]:
+            flat_dict[(outer_key, inner_key)] = nested_dict[outer_key][inner_key]
+    return flat_dict
+
+# Function to plot and save the solved model as a PNG
+def plot_and_save_model(model, problem_name):
+    # Set up positions and graph structure
+    positions = {}
+    for idx, i in enumerate(model.I):
+        positions[i] = (0, idx * 10)
+    for idx, j in enumerate(model.J):
+        positions[j] = (50, idx * 10)
+    for idx, k in enumerate(model.K):
+        positions[k] = (100, idx * 10)
+
+    # Create the graph
+    G = nx.DiGraph()
+    G.add_nodes_from(model.I, node_type='Facility')
+    G.add_nodes_from(model.J, node_type='Substation')
+    G.add_nodes_from(model.K, node_type='Customer')
+
+    # Add edges based on flows
+    for i in model.I:
+        for j in model.J:
+            flow_ij = sum(pyo.value(model.f_ij[i, j, s]) for s in model.S)
+            if flow_ij > 0.01:  # Threshold for negligible flows
+                G.add_edge(i, j, weight=flow_ij)
+
+    for j in model.J:
+        for k in model.K:
+            flow_jk = sum(pyo.value(model.f_jk[j, k, s]) for s in model.S)
+            if flow_jk > 0.01:
+                G.add_edge(j, k, weight=flow_jk)
+
+    # Plot and save as PNG
+    plt.figure(figsize=(12, 8))
+    nx.draw(G, pos=positions, with_labels=True, node_size=800, arrows=True)
+    plt.title(f"Solution Network for {problem_name}")
+    plt.savefig(f"{problem_name}_solution.png")  # Save as PNG
+    plt.close()
+
 # Process each data file
-for data_file in data_files:
-    problem_name = data_file.replace('.json', '')
+for filepath in data_files:
+    problem_name = os.path.splitext(os.path.basename(filepath))[0]
     print(f"\nSolving {problem_name}...")
     
     # Load data
-    filepath = os.path.join(data_directory, data_file)
     with open(filepath, 'r') as f:
         data = json.load(f)
     
-    # Reconstruct the tuple keys from strings
-    def convert_keys_to_tuples(data_dict):
-        new_dict = {}
-        for key_str, value in data_dict.items():
-            # Remove parentheses if present
-            key_str = key_str.strip("()")
-            # Split the string into components
-            key_parts = key_str.split(", ")
-            # Remove quotes around elements if any
-            key_parts = [part.strip("'") for part in key_parts]
-            # Reconstruct the tuple key
-            key = tuple(key_parts)
-            new_dict[key] = value
-        return new_dict
-    
-    # Reconstruct data with tuple keys
-    PC_data = convert_keys_to_tuples(data['PC'])
-    Cap_data = convert_keys_to_tuples(data['Cap'])
-    SC_data = convert_keys_to_tuples(data['SC'])
-    D_data = convert_keys_to_tuples(data['D'])
-    alpha_data = convert_keys_to_tuples(data['alpha'])
-    beta_data = convert_keys_to_tuples(data['beta'])
-    M_data = convert_keys_to_tuples(data['M'])
+    # Flatten data
+    PC_data = flatten_nested_dict(data['PC'])
+    Cap_data = flatten_nested_dict(data['Cap'])
+    SC_data = flatten_nested_dict(data['SC'])
+    D_data = flatten_nested_dict(data['D'])
+    alpha_data = flatten_nested_dict(data['alpha'])
+    beta_data = flatten_nested_dict(data['beta'])
+    M_data = flatten_nested_dict(data['M'])
     
     # Create the model
     model = pyo.ConcreteModel()
@@ -124,6 +157,8 @@ for data_file in data_files:
     # Check solver status
     if (results.solver.status == pyo.SolverStatus.ok) and (results.solver.termination_condition == pyo.TerminationCondition.optimal):
         print(f"{problem_name} solved to optimality.")
+        # Plot and save the model as a PNG file
+        plot_and_save_model(model, problem_name)
     else:
         print(f"{problem_name} did not solve to optimality. Solver Status: {results.solver.status}")
         continue  # Skip to next instance if not optimal
@@ -132,12 +167,12 @@ for data_file in data_files:
     total_cost = pyo.value(model.TotalCost)
     print(f"Total Cost for {problem_name}: {total_cost:,.2f}")
     
-    print("\nOpened Substations:")
+    print("\\nOpened Substations:")
     for j in model.J:
         if pyo.value(model.y[j]) > 0.5:
             print(f"Substation {j} is opened.")
     
-    print("\nCustomer Assignments:")
+    print("\\nCustomer Assignments:")
     for k in model.K:
         for j in model.J:
             if pyo.value(model.x[j, k]) > 0.5:
