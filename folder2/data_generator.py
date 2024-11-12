@@ -1,8 +1,9 @@
 import random
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 import math
+import warnings
 
 class ThermalNetworkDataGenerator:
     def __init__(self, 
@@ -27,6 +28,9 @@ class ThermalNetworkDataGenerator:
         seed: int
             Random seed for reproducibility
         """
+        # Input validation
+        self._validate_inputs(num_facilities, num_substations, num_customers, grid_size)
+        
         self.num_facilities = num_facilities
         self.num_substations = num_substations
         self.num_customers = num_customers
@@ -42,10 +46,66 @@ class ThermalNetworkDataGenerator:
         
         # Calculate distances
         self.distances = self._calculate_distances()
+        
+        # Check feasibility indicators
+        self._check_feasibility_indicators()
+
+    def _validate_inputs(self, num_facilities: int, num_substations: int, 
+                        num_customers: int, grid_size: int):
+        """Validate input parameters"""
+        if num_facilities <= 0:
+            raise ValueError("Number of facilities must be positive")
+        if num_substations <= 0:
+            raise ValueError("Number of substations must be positive")
+        if num_customers <= 0:
+            raise ValueError("Number of customers must be positive")
+        if grid_size <= 0:
+            raise ValueError("Grid size must be positive")
+            
+        # Warning for potentially problematic configurations
+        if num_substations < math.ceil(num_customers / 5):
+            warnings.warn(
+                f"Number of substations ({num_substations}) might be too low "
+                f"for the number of customers ({num_customers})"
+            )
+        if num_facilities < math.ceil(num_customers / 10):
+            warnings.warn(
+                f"Number of facilities ({num_facilities}) might be too low "
+                f"for the number of customers ({num_customers})"
+            )
+
+    def _check_feasibility_indicators(self):
+        """Check and report potential feasibility issues"""
+        # Calculate average distances
+        avg_facility_to_sub = np.mean([
+            self.distances[f'Plant{i+1}'][f'Sub{j+1}']
+            for i in range(self.num_facilities)
+            for j in range(self.num_substations)
+        ])
+        
+        avg_sub_to_customer = np.mean([
+            self.distances[f'Sub{j+1}'][f'City{k+1}']
+            for j in range(self.num_substations)
+            for k in range(self.num_customers)
+        ])
+        
+        # Check for potential issues
+        if avg_facility_to_sub > self.grid_size / 2:
+            warnings.warn(
+                "Average facility-to-substation distance is high, "
+                "might lead to significant heat losses"
+            )
+        
+        if avg_sub_to_customer > self.grid_size / 3:
+            warnings.warn(
+                "Average substation-to-customer distance is high, "
+                "might lead to significant heat losses"
+            )
 
     def _generate_locations(self) -> Dict[str, Tuple[float, float]]:
         """Generate random locations for facilities, substations, and customers."""
         locations = {}
+        max_attempts = 1000  # Prevent infinite loops
         
         # Generate facility locations (preferably on the edges of the grid)
         for i in range(self.num_facilities):
@@ -57,26 +117,51 @@ class ThermalNetworkDataGenerator:
                 y = random.choice([0, self.grid_size])
             locations[f'Plant{i+1}'] = (x, y)
         
-        # Generate substation locations
+        # Generate substation locations with minimum separation
         for j in range(self.num_substations):
-            while True:
+            attempts = 0
+            while attempts < max_attempts:
                 x = random.uniform(0, self.grid_size)
                 y = random.uniform(0, self.grid_size)
                 new_loc = (x, y)
+                
                 # Ensure minimum distance from other substations
-                if all(math.dist(new_loc, loc) > self.grid_size/math.sqrt(self.num_substations) 
-                       for loc in locations.values()):
+                min_distance = self.grid_size/math.sqrt(self.num_substations)
+                if all(math.dist(new_loc, loc) > min_distance 
+                       for name, loc in locations.items() if 'Sub' in name):
                     locations[f'Sub{j+1}'] = new_loc
                     break
+                attempts += 1
+            
+            if attempts == max_attempts:
+                warnings.warn(f"Could not find suitable location for Sub{j+1} "
+                            f"with minimum separation {min_distance}")
+                # Place it anyway
+                locations[f'Sub{j+1}'] = (x, y)
         
-        # Generate customer locations (cluster them somewhat)
+        # Generate customer locations (clustered)
         num_clusters = min(3, self.num_customers)
-        cluster_centers = [
-            (random.uniform(20, self.grid_size-20),
-             random.uniform(20, self.grid_size-20))
-            for _ in range(num_clusters)
-        ]
+        cluster_centers = []
         
+        # Generate well-separated cluster centers
+        for _ in range(num_clusters):
+            attempts = 0
+            while attempts < max_attempts:
+                center = (random.uniform(20, self.grid_size-20),
+                         random.uniform(20, self.grid_size-20))
+                if all(math.dist(center, c) > self.grid_size/4 for c in cluster_centers):
+                    cluster_centers.append(center)
+                    break
+                attempts += 1
+                
+            if attempts == max_attempts:
+                # If we can't find a well-separated center, just use what we have
+                cluster_centers.append((
+                    random.uniform(20, self.grid_size-20),
+                    random.uniform(20, self.grid_size-20)
+                ))
+        
+        # Generate customer locations around clusters
         for k in range(self.num_customers):
             center = random.choice(cluster_centers)
             x = np.random.normal(center[0], self.grid_size/10)
@@ -113,23 +198,31 @@ class ThermalNetworkDataGenerator:
 
     def generate_fixed_costs(self) -> Dict[str, float]:
         """Generate fixed costs for substations."""
-        return {f'Sub{j+1}': random.uniform(800, 1500) 
-                for j in range(self.num_substations)}
+        # Base cost varies by number of customers to serve
+        base_cost = 800 + (self.num_customers * 50)  # Scale with problem size
+        return {
+            f'Sub{j+1}': random.uniform(base_cost, base_cost * 1.5) 
+            for j in range(self.num_substations)
+        }
 
     def generate_capacities(self) -> Tuple[Dict[str, float], Dict[str, float]]:
         """Generate capacities for facilities and substations."""
-        # Facility capacities
-        total_winter_demand = self.num_customers * 300  # Approximate peak demand
+        # Calculate total winter demand
+        total_winter_demand = self.num_customers * 300  # Base demand
+        
+        # Facility capacities - ensure total capacity exceeds maximum demand
         facility_capacity = {}
+        min_facility_capacity = total_winter_demand / self.num_facilities * 1.2
+        
         for i in range(self.num_facilities):
-            facility_capacity[f'Plant{i+1}'] = (total_winter_demand / 
-                                              self.num_facilities) * random.uniform(1.2, 1.5)
+            facility_capacity[f'Plant{i+1}'] = min_facility_capacity * random.uniform(1.0, 1.3)
 
         # Substation capacities
         substation_capacity = {}
+        min_substation_capacity = total_winter_demand / self.num_substations
+        
         for j in range(self.num_substations):
-            substation_capacity[f'Sub{j+1}'] = (total_winter_demand / 
-                                              self.num_substations) * random.uniform(0.8, 1.2)
+            substation_capacity[f'Sub{j+1}'] = min_substation_capacity * random.uniform(0.8, 1.2)
             
         return facility_capacity, substation_capacity
 
@@ -143,8 +236,12 @@ class ThermalNetworkDataGenerator:
             'Spring': 0.6
         }
         
+        # Scale base demand with problem size
+        base_demand_min = 200 + (self.num_customers * 2)  # Larger problems have higher per-customer demand
+        base_demand_max = 300 + (self.num_customers * 3)
+        
         for k in range(self.num_customers):
-            base_demand = random.uniform(200, 300)
+            base_demand = random.uniform(base_demand_min, base_demand_max)
             for season in self.seasons:
                 demand[(f'City{k+1}', season)] = base_demand * season_factors[season]
         
@@ -156,8 +253,8 @@ class ThermalNetworkDataGenerator:
         alpha = {}  # Facility to Substation
         beta = {}   # Substation to Customer
         
-        # Base heat loss coefficient
-        lambda_coef = 0.001
+        # Base heat loss coefficient - scales with grid size
+        lambda_coef = 0.001 * (100 / self.grid_size)  # Normalize for grid size
         
         # Facility to Substation coefficients
         for i in range(self.num_facilities):
@@ -204,17 +301,21 @@ class ThermalNetworkDataGenerator:
         # Plot facilities
         facilities_x = [loc[0] for name, loc in self.locations.items() if 'Plant' in name]
         facilities_y = [loc[1] for name, loc in self.locations.items() if 'Plant' in name]
-        plt.scatter(facilities_x, facilities_y, c='red', s=100, label='Facilities')
+        plt.scatter(facilities_x, facilities_y, c='red', s=100, label='Facilities', marker='s')
         
         # Plot substations
         substations_x = [loc[0] for name, loc in self.locations.items() if 'Sub' in name]
         substations_y = [loc[1] for name, loc in self.locations.items() if 'Sub' in name]
-        plt.scatter(substations_x, substations_y, c='blue', s=100, label='Substations')
+        plt.scatter(substations_x, substations_y, c='blue', s=100, label='Substations', marker='^')
         
         # Plot customers
         customers_x = [loc[0] for name, loc in self.locations.items() if 'City' in name]
         customers_y = [loc[1] for name, loc in self.locations.items() if 'City' in name]
-        plt.scatter(customers_x, customers_y, c='green', s=100, label='Customers')
+        plt.scatter(customers_x, customers_y, c='green', s=100, label='Customers', marker='o')
+        
+        # Add labels
+        for name, (x, y) in self.locations.items():
+            plt.annotate(name, (x, y), xytext=(5, 5), textcoords='offset points')
         
         plt.grid(True)
         plt.legend()
@@ -223,32 +324,3 @@ class ThermalNetworkDataGenerator:
         plt.ylabel('Y coordinate')
         
         return plt
-
-# Example usage:
-if __name__ == "__main__":
-    # Create generator
-    generator = ThermalNetworkDataGenerator(
-        num_facilities=2,
-        num_substations=3,
-        num_customers=5,
-        grid_size=100
-    )
-    
-    # Generate data
-    data = generator.generate_all_data()
-    
-    # Print sample of generated data
-    print("\nSample of generated data:")
-    print("\nProduction Costs (first 2):")
-    for i, (k, v) in enumerate(data['production_cost'].items()):
-        if i < 2:
-            print(f"{k}: {v:.2f}")
-            
-    print("\nFixed Costs (first 2):")
-    for i, (k, v) in enumerate(data['fixed_cost'].items()):
-        if i < 2:
-            print(f"{k}: {v:.2f}")
-    
-    # Visualize network
-    plt = generator.visualize_network()
-    plt.show()
