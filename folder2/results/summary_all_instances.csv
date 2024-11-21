@@ -1,11 +1,11 @@
 Instance,Facilities,Substations,Customers,Grid Size,Solution Time,Status,Total Cost,Open Substations,Opened Substations
-1,2,4,3,100,0.644456148147583,Infeasible/Error,,,
-2,2,3,4,100,0.12724900245666504,Infeasible/Error,,,
-3,3,4,6,100,0.12530970573425293,Infeasible/Error,,,
-4,4,4,8,100,0.17777442932128906,Infeasible/Error,,,
-5,5,4,12,100,0.41997194290161133,Optimal,549016.7557313876,4.0,"Sub1, Sub2, Sub3, Sub4"
-6,6,4,15,100,1.2019062042236328,Optimal,681521.6624914982,4.0,"Sub1, Sub2, Sub3, Sub4"
-7,7,5,20,100,0.11847305297851562,Infeasible/Error,,,
-8,8,6,25,100,0.14365863800048828,Infeasible/Error,,,
-9,10,6,30,100,0.2382192611694336,Infeasible/Error,,,
-10,12,4,40,100,0.18335294723510742,Infeasible/Error,,,
+1,2,4,3,100,0.7221910953521729,Infeasible/Error,,,
+2,2,3,4,100,0.3123776912689209,Infeasible/Error,,,
+3,3,4,6,100,0.24088668823242188,Infeasible/Error,,,
+4,4,4,8,100,0.23581337928771973,Infeasible/Error,,,
+5,5,4,12,100,0.46237850189208984,Optimal,549016.7557313876,4.0,"Sub1, Sub2, Sub3, Sub4"
+6,6,4,15,100,1.5583465099334717,Optimal,681521.6624914982,4.0,"Sub1, Sub2, Sub3, Sub4"
+7,7,5,20,100,0.3323180675506592,Infeasible/Error,,,
+8,8,6,25,100,0.24924969673156738,Infeasible/Error,,,
+9,10,6,30,100,0.20027613639831543,Infeasible/Error,,,
+10,12,4,40,100,0.19413447380065918,Infeasible/Error,,,

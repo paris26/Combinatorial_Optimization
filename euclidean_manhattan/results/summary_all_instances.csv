@@ -1,0 +1,2 @@
+Instance,Facilities,Substations,Customers,Grid Size,Min Facilities per Sub,Max Facilities per Sub,Solution Time,Status
+1,100,200,6,300,1,2,4.810653448104858,Infeasible/Error
