@@ -180,7 +180,24 @@ class ThermalNetworkDataGenerator:
             for name2, loc2 in self.locations.items():
                 distances[name1][name2] = math.dist(loc1, loc2)
         return distances
-
+        # different distances ( euclidean -> factory-sub , manhattan -> sub-city)
+    # def _calculate_distances(self) -> Dict[str, Dict[str, float]]:
+    # """Calculate distances with different metrics based on node type."""
+    # distances = {}
+    # for name1, loc1 in self.locations.items():
+    #     distances[name1] = {}
+    #     for name2, loc2 in self.locations.items():
+    #         if 'Plant' in name1 and 'Sub' in name2:
+    #             # Euclidean for plant-to-substation
+    #             distances[name1][name2] = math.dist(loc1, loc2)
+    #         elif 'Sub' in name1 and 'City' in name2:
+    #             # Manhattan for substation-to-customer
+    #             distances[name1][name2] = abs(loc1[0] - loc2[0]) + abs(loc1[1] - loc2[1])
+    #         else:
+    #             # Default to Euclidean for other cases
+    #             distances[name1][name2] = math.dist(loc1, loc2)
+    # return distances
+    
     def generate_production_costs(self) -> Dict[Tuple[str, str], float]:
         """Generate production costs based on distances and base costs."""
         production_cost = {}
