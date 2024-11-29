@@ -1,0 +1,25 @@
+From,To,Season,Flow,Type
+Plant1,Sub1,Winter,491.09447041448976,Facility to Substation
+Plant1,Sub1,Spring,294.6566822486928,Facility to Substation
+Plant1,Sub1,Summer,98.21889408289638,Facility to Substation
+Plant1,Sub1,Fall,294.6566822486928,Facility to Substation
+Plant2,Sub2,Winter,519.2339388442289,Facility to Substation
+Plant2,Sub2,Spring,311.5403633065373,Facility to Substation
+Plant2,Sub2,Summer,103.84678776884579,Facility to Substation
+Plant2,Sub2,Fall,311.5403633065373,Facility to Substation
+Sub1,City2,Winter,215.88656260175193,Substation to Customer
+Sub1,City2,Spring,129.53193756105117,Substation to Customer
+Sub1,City2,Summer,43.17731252035039,Substation to Customer
+Sub1,City2,Fall,129.53193756105117,Substation to Customer
+Sub1,City4,Winter,243.81694333664595,Substation to Customer
+Sub1,City4,Spring,146.2901660019866,Substation to Customer
+Sub1,City4,Summer,48.76338866732772,Substation to Customer
+Sub1,City4,Fall,146.2901660019866,Substation to Customer
+Sub2,City1,Winter,249.64426935913264,Substation to Customer
+Sub2,City1,Spring,149.78656161547957,Substation to Customer
+Sub2,City1,Summer,49.92885387182653,Substation to Customer
+Sub2,City1,Fall,149.78656161547957,Substation to Customer
+Sub2,City3,Winter,252.91834696794456,Substation to Customer
+Sub2,City3,Spring,151.75100818076675,Substation to Customer
+Sub2,City3,Summer,50.58366939358892,Substation to Customer
+Sub2,City3,Fall,151.75100818076675,Substation to Customer
