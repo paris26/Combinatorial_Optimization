@@ -1,0 +1,22 @@
+# Instance Format: num_facilities,num_substations,num_customers,grid_size
+# Difficulty increases with each instance
+# Very Easy - Small network, many substations relative to customers
+2,4,3,100
+# Easy - Balanced small network
+2,3,4,100
+# Medium - Moderate size, balanced resources
+3,4,6,100
+# Medium-Hard - Larger network, limited substations
+4,4,8,100
+# Hard - Large network, constrained substations
+5,4,12,100
+# Very Hard - Large network, very constrained substations
+6,4,15,100
+# Challenging - Complex network, tight constraints
+7,5,20,100
+# Very Challenging - Large complex network
+8,6,25,100
+# Extremely Hard - Highly constrained, likely feasible
+10,6,30,100
+# Likely Infeasible - Too many customers for the infrastructure
+12,4,40,100

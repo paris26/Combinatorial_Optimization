@@ -1,0 +1,21 @@
+# Instance Format: num_facilities,num_substations,num_customers,grid_size
+# Very Easy - Small network, generous capacity
+5,8,20,100
+# Easy - Small network, balanced resources
+6,10,25,100
+# Easy-Medium - Moderate size, good ratio
+7,12,30,100
+# Medium - Getting larger, still well-balanced
+8,15,40,120
+# Medium-Hard - Larger network, tighter margins
+10,18,50,150
+# Hard - Large network, needs careful optimization
+12,20,60,150
+# Very Hard - Complex network, tight constraints
+15,25,80,200
+# Challenging - Large scale, critical optimization needed
+18,30,100,200
+# Very Challenging - Major network, precise planning required
+20,35,120,250
+# Extremely Hard - Maximum complexity, requires optimal strategy
+25,40,150,300
