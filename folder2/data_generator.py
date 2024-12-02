@@ -212,7 +212,8 @@ class ThermalNetworkDataGenerator:
                 production_cost[(facility, substation)] = base_cost * (1 + 0.5 * distance_factor)
         
         return production_cost
-
+    
+    # we use variabiity in costs by randomizing it
     def generate_fixed_costs(self) -> Dict[str, float]:
         """Generate fixed costs for substations."""
         # Base cost varies by number of customers to serve
