@@ -225,7 +225,9 @@ class ThermalNetworkDataGenerator:
     def generate_capacities(self) -> Tuple[Dict[str, float], Dict[str, float]]:
         """Generate capacities for facilities and substations."""
         # Calculate total winter demand
-        total_winter_demand = self.num_customers * 300  # Base demand
+        # fix base demand
+        max_demand_per_customer = 300 + (self.num_customers * 3)
+        total_winter_demand = self.num_customers * max_demand_per_customer
         
         # Facility capacities - ensure total capacity exceeds maximum demand
         facility_capacity = {}
