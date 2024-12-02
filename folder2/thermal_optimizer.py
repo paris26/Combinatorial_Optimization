@@ -100,6 +100,17 @@ class ThermalNetworkOptimizer:
         try:
             solver = SolverFactory('gurobi')
             results = solver.solve(model, tee=True)
+
+            #  # Add solver parameters for better numerical stability
+            # solver_options = {
+            # 'FeasibilityTol': 1e-5,    # Relaxed from default 1e-6
+            # 'IntFeasTol': 1e-4,        # Relaxed from default 1e-5
+            # 'OptimalityTol': 1e-5,     # Relaxed from default 1e-6
+            # 'NumericFocus': 3,         # Maximum numerical precision
+            # 'Method': 2,               # Barrier method
+            # 'BarConvTol': 1e-5,        # Barrier convergence tolerance
+            # 'MIPGap': 1e-4             # Slightly relaxed MIP gap
+            # }
             
             # Check solution status
             if (results.solver.status == SolverStatus.ok and 

@@ -1,0 +1,11 @@
+Instance,Solver,Facilities,Substations,Customers,Grid Size,Solution Time,Status,Total Cost,Open Substations,Opened Substations
+1,Gurobi B&B,5,8,20,100,3.245098352432251,Optimal,1117206.7553480153,6.0,"Sub2, Sub3, Sub4, Sub5, Sub6, Sub7"
+2,Gurobi B&B,5,9,20,100,3.189772844314575,Optimal,817932.8415362164,6.0,"Sub2, Sub3, Sub4, Sub5, Sub6, Sub9"
+3,Gurobi B&B,6,8,20,100,3.9717466831207275,Optimal,796993.9821440527,6.0,"Sub1, Sub2, Sub3, Sub4, Sub6, Sub7"
+4,Gurobi B&B,6,9,22,100,3.5810961723327637,Optimal,1104971.4271397248,7.0,"Sub1, Sub2, Sub5, Sub6, Sub7, Sub8, Sub9"
+5,Gurobi B&B,6,10,24,100,5.1992950439453125,Optimal,1136497.6476378047,8.0,"Sub1, Sub2, Sub4, Sub5, Sub6, Sub8, Sub9, Sub10"
+6,Gurobi B&B,6,11,24,100,6.285160779953003,Optimal,1078586.7437210707,8.0,"Sub1, Sub2, Sub4, Sub6, Sub8, Sub9, Sub10, Sub11"
+7,Gurobi B&B,7,10,24,100,5.805193901062012,Optimal,826244.5739766887,7.0,"Sub1, Sub3, Sub4, Sub5, Sub7, Sub8, Sub10"
+8,Gurobi B&B,7,12,25,100,6.844861745834351,Optimal,1003860.5380170161,9.0,"Sub1, Sub3, Sub4, Sub5, Sub6, Sub7, Sub8, Sub9, Sub10"
+9,Gurobi B&B,7,13,25,100,0.05186343193054199,Infeasible/Error,,,
+10,Gurobi B&B,8,14,26,100,0.054245948791503906,Infeasible/Error,,,

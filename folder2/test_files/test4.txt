@@ -1,0 +1,21 @@
+# Instance Format: num_facilities,num_substations,num_customers,grid_size
+# Instance 1 - Very compact network
+5,8,20,100
+# Instance 2 - Slight variation in substations
+5,9,20,100
+# Instance 3 - More facilities
+6,8,20,100
+# Instance 4 - Balanced small network
+6,9,22,100
+# Instance 5 - Additional customers
+6,10,24,100
+# Instance 6 - More substations
+6,11,24,100
+# Instance 7 - Increased facilities
+7,10,24,100
+# Instance 8 - Larger customer base
+7,12,25,100
+# Instance 9 - More distributed
+7,13,25,100
+# Instance 10 - Largest viable small network
+8,14,26,100

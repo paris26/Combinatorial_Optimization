@@ -1,5 +1,0 @@
-Instance,Facilities,Substations,Customers,Grid Size,Solution Time,Status,Total Cost,Open Substations,Opened Substations
-1,6,8,24,100,5.937247037887573,Optimal,1272453.301629878,8.0,"Sub1, Sub2, Sub3, Sub4, Sub5, Sub6, Sub7, Sub8"
-2,7,10,28,100,18.691410779953003,Optimal,1491974.4190304468,9.0,"Sub1, Sub3, Sub4, Sub5, Sub6, Sub7, Sub8, Sub9, Sub10"
-3,8,16,32,100,0.10584306716918945,Infeasible/Error,,,
-4,10,15,40,100,0.07178688049316406,Infeasible/Error,,,
