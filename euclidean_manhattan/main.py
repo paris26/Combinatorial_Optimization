@@ -1,4 +1,4 @@
-from data_generator import ThermalNetworkDataGenerator
+from folder2.data_generator import ThermalNetworkDataGenerator
 from thermal_optimizer import ThermalNetworkOptimizer
 import matplotlib.pyplot as plt
 import pandas as pd
