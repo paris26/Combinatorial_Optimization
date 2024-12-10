@@ -1,4 +1,5 @@
 import pyomo.environ as pyo
+from pyomo.contrib.mpc.examples.cstr.model import initialize_model
 from pyomo.opt import SolverFactory, SolverStatus, TerminationCondition
 
 class ThermalNetworkOptimizer:
@@ -19,6 +20,7 @@ class ThermalNetworkOptimizer:
             
             # Parameters
             model.PC = pyo.Param(model.I, model.J, initialize=self.data['production_cost'])
+            model.FC_facility = pyo.Param(model.I, initialize = self.data['facility_costs'])
             model.FC = pyo.Param(model.J, initialize=self.data['fixed_cost'])
             model.Cap = pyo.Param(model.I, initialize=self.data['facility_capacity'])
             model.SC = pyo.Param(model.J, initialize=self.data['substation_capacity'])
@@ -28,11 +30,13 @@ class ThermalNetworkOptimizer:
             
             # Variables - with relaxation option
             if relaxed:
-                model.y = pyo.Var(model.J, bounds=(0,1))
-                model.x = pyo.Var(model.J, model.K, bounds=(0,1))
+                model.z = pyo.Var(model.I, bounds=(0, 1))  # Facility opening decision
+                model.y = pyo.Var(model.J, bounds=(0, 1))  # Substation opening
+                model.x = pyo.Var(model.J, model.K, bounds=(0, 1))  # Assignment
             else:
-                model.y = pyo.Var(model.J, domain=pyo.Binary)
-                model.x = pyo.Var(model.J, model.K, domain=pyo.Binary)
+                model.z = pyo.Var(model.I, domain=pyo.Binary)  # Facility opening decision
+                model.y = pyo.Var(model.J, domain=pyo.Binary)  # Substation opening
+                model.x = pyo.Var(model.J, model.K, domain=pyo.Binary)  # Assignment
                 
             model.f_ij = pyo.Var(model.I, model.J, model.S, domain=pyo.NonNegativeReals)
             model.f_jk = pyo.Var(model.J, model.K, model.S, domain=pyo.NonNegativeReals)
@@ -45,13 +49,20 @@ class ThermalNetworkOptimizer:
                     elif var_type == 'x':
                         j, k = var_id
                         model.x[j,k].fix(value)
-                
-            # Objective function
+
             def obj_rule(model):
-                return (sum(model.FC[j] * model.y[j] for j in model.J) +
-                       sum(model.PC[i,j] * model.f_ij[i,j,s] 
-                           for i in model.I for j in model.J for s in model.S))
+                return (
+                        sum(model.FC_facility[i] * model.z[i] for i in model.I) +  # Facility costs
+                        sum(model.FC[j] * model.y[j] for j in model.J) +  # Substation costs
+                        sum(model.PC[i, j] * model.f_ij[i, j, s]  # Production costs
+                            for i in model.I for j in model.J for s in model.S)
+                )
             model.objective = pyo.Objective(rule=obj_rule, sense=pyo.minimize)
+
+            def facility_flow_rule(model, i, s):
+                return sum(model.f_ij[i, j, s] for j in model.J) <= model.Cap[i] * model.z[i]
+
+            model.facility_flow = pyo.Constraint(model.I, model.S, rule=facility_flow_rule)
             
             # Constraints
             def flow_conservation_rule(model, j, s):
@@ -64,9 +75,9 @@ class ThermalNetworkOptimizer:
                        model.D[k,s])
             model.demand_satisfaction = pyo.Constraint(model.K, model.S, rule=demand_satisfaction_rule)
             
-            def production_capacity_rule(model, i, s):
-                return sum(model.f_ij[i,j,s] for j in model.J) <= model.Cap[i]
-            model.production_capacity = pyo.Constraint(model.I, model.S, rule=production_capacity_rule)
+            # def production_capacity_rule(model, i, s):
+            #     return sum(model.f_ij[i,j,s] for j in model.J) <= model.Cap[i]
+            # model.production_capacity = pyo.Constraint(model.I, model.S, rule=production_capacity_rule)
             
             def substation_capacity_rule(model, j, s):
                 return sum(model.f_jk[j,k,s] for k in model.K) <= model.SC[j] * model.y[j]
@@ -122,6 +133,7 @@ class ThermalNetworkOptimizer:
                 solution['opened_substations'] = [j for j in model.J if pyo.value(model.y[j]) > 0.5]
                 solution['assignments'] = {k: next(j for j in model.J if pyo.value(model.x[j,k]) > 0.5) 
                                         for k in model.K}
+                solution['opened_facilities'] = [i for i in model.I if pyo.value(model.z[i]) > 0.5]
                 return solution
             else:
                 print(f"Solver status: {results.solver.status}")
@@ -131,19 +143,19 @@ class ThermalNetworkOptimizer:
         except Exception as e:
             print(f"Error solving model: {str(e)}")
             return None
-        
+
     def extract_solution(self, model):
-        """Helper to extract solution from model in standard format"""
         return {
+            'z': {i: pyo.value(model.z[i]) for i in model.I},  # Add facility decisions
             'y': {j: pyo.value(model.y[j]) for j in model.J},
-            'x': {(j,k): pyo.value(model.x[j,k]) for j in model.J for k in model.K},
+            'x': {(j, k): pyo.value(model.x[j, k]) for j in model.J for k in model.K},
             'flows': {
                 'facility_to_substation': {
-                    (i,j,s): pyo.value(model.f_ij[i,j,s])
+                    (i, j, s): pyo.value(model.f_ij[i, j, s])
                     for i in model.I for j in model.J for s in model.S
                 },
                 'substation_to_customer': {
-                    (j,k,s): pyo.value(model.f_jk[j,k,s])
+                    (j, k, s): pyo.value(model.f_jk[j, k, s])
                     for j in model.J for k in model.K for s in model.S
                 }
             }

@@ -74,6 +74,14 @@ class ThermalNetworkDataGenerator:
                 f"for the number of customers ({num_customers})"
             )
 
+    def generate_facility_costs(self) -> Dict[str, float]:
+        """Generate fixed costs for facilities"""
+        base_cost = 1500 + (self.num_facilities * 100)  # Scale with problem size
+        return {
+            f'Plant{i + 1}': random.uniform(base_cost, base_cost * 1.5)
+            for i in range(self.num_facilities)
+        }
+
     def _check_feasibility_indicators(self):
         """Check and report potential feasibility issues"""
         # Calculate average distances
@@ -304,6 +312,7 @@ class ThermalNetworkDataGenerator:
         
         data = {
             'production_cost': self.generate_production_costs(),
+            'facility_costs': self.generate_facility_costs(),
             'fixed_cost': self.generate_fixed_costs(),
             'facility_capacity': facility_capacity,
             'substation_capacity': substation_capacity,
