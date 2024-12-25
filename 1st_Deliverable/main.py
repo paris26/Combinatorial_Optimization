@@ -1,8 +1,6 @@
 from data_generator import ThermalNetworkDataGenerator
-from random_data_generator import RandomizedThermalNetworkGenerator
 from thermal_optimizer import ThermalNetworkOptimizer
-from branch_and_bound_solver import BranchAndBoundSolver
-import matplotlib.pyplot as plt
+from optimized_branch_and_bound_solver import OptimizedBranchAndBoundSolver
 import pandas as pd
 import time
 import os
@@ -58,7 +56,8 @@ def run_optimization(instance_num, params, use_custom_bnb=False):
         grid_size=params['grid_size']
     )
 
-    # generator = RandomizedThermalNetworkGenerator( 
+
+    # generator = RandomizedThermalNetworkGenerator(
     #     num_facilities=params['num_facilities'],
     #     num_substations=params['num_substations'],
     #     num_customers=params['num_customers'],
@@ -73,10 +72,11 @@ def run_optimization(instance_num, params, use_custom_bnb=False):
     # Initialize optimizer
     optimizer = ThermalNetworkOptimizer(generator)
     
-    # Solve using either custom B&B or Gurobi
+    # Solve using either custom BranchAndBound or Gurobi
     start_time = time.time()
     if use_custom_bnb:
-        bnb_solver = BranchAndBoundSolver(optimizer)
+        bnb_solver = OptimizedBranchAndBoundSolver(optimizer)
+        #bnb_solver = BranchAndBoundSolver(optimizer)
         solution = bnb_solver.solve()
     else:
         solution = optimizer.solve_single_stage()
@@ -84,7 +84,7 @@ def run_optimization(instance_num, params, use_custom_bnb=False):
     
     result_summary = {
         'Instance': instance_num,
-        'Solver': 'Custom B&B' if use_custom_bnb else 'Gurobi B&B',
+        'Solver': 'Custom BranchAndBound' if use_custom_bnb else 'Gurobi BranchAndBound',
         'Facilities': params['num_facilities'],
         'Substations': params['num_substations'],
         'Customers': params['num_customers'],
@@ -145,7 +145,7 @@ def main():
                        help='Choose solver: gurobi (default) or custom branch & bound')
     args = parser.parse_args()
     
-    # Use custom B&B if specified
+    # Use custom BranchAndBound if specified
     use_custom_bnb = (args.solver == 'custom')
     
     # Clean up existing directories

@@ -10,7 +10,7 @@ class ThermalNetworkDataGenerator:
                  num_facilities: int,
                  num_substations: int,
                  num_customers: int,
-                 grid_size: int = 100,
+                 grid_size: int = 1000,
                  seed: int = 42):
         """
         Initialize the data generator.

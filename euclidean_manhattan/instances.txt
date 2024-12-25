@@ -1,2 +1,0 @@
-# facilities,substations,customers,grid_size,min_facility_per_sub,max_facility_per_sub
-100,200,6,300,1,2
