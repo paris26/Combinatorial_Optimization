@@ -1,0 +1,4 @@
+# Instance Format: num_facilities,num_substations,num_customers,grid_size
+# Difficulty increases with each instance
+# Very Easy - Small network, many substations relative to customers
+4,4,8,100
