@@ -1,0 +1,32 @@
+# Instance Format: num_facilities,num_substations,num_customers,grid_size
+# Difficulty increases with each instance
+
+# Very Easy - Small network, balanced ratios
+2,3,4,100
+
+# Easy - Slightly larger network
+3,4,6,100
+
+# Easy-Medium - More customers per substation
+3,5,8,100
+
+# Medium - Balanced network with more components
+4,6,10,100
+
+# Medium-Hard - Increased customer density
+4,7,12,100
+
+# Hard - Complex network configuration
+5,8,14,100
+
+# Hard-Plus - Higher facility utilization
+5,9,16,100
+
+# Very Hard - Dense customer distribution
+6,10,18,100
+
+# Challenging - Complex optimization required
+6,11,20,100
+
+# Very Challenging - Maximum complexity
+7,12,22,100

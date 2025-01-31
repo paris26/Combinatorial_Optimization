@@ -1,2 +1,2 @@
 Instance,Solver,Facilities,Substations,Customers,Grid Size,Solution Time,Status,Total Cost,Open Substations,Opened Substations
-1,Gurobi Solver,4,4,8,100,0.0900428295135498,Optimal,256523.21179516532,3,"Sub1, Sub2, Sub4"
+1,Simple Solver,3,4,6,100,54.47739863395691,Optimal,213899.50959079547,3,"Sub1, Sub2, Sub4"

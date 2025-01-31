@@ -1,2 +1,0 @@
-Instance,Solver,Facilities,Substations,Customers,Grid Size,Solution Time,Status,Total Cost,Open Substations,Opened Substations,nodes_explored,search_statistics,Total Nodes,Pruned Nodes,Integer Solutions,Best Bound
-1,Optimized Solver,4,4,8,100,37.896703481674194,Optimal,255072.24910754766,3,"Sub1, Sub2, Sub4",928,"{'total_nodes': 1294, 'pruned_nodes': 366, 'integer_solutions': 38, 'best_bound': 250125.66707060143, 'preprocessing_time': 0.3726081848144531, 'preprocessing_objective': inf}",1294,366,38,250125.66707060143

@@ -2,6 +2,8 @@ from data_generator import ThermalNetworkDataGenerator
 from thermal_optimizer import ThermalNetworkOptimizer
 from optimized_branch_and_bound_solver import OptimizedBranchAndBoundSolver
 from branch_and_bound_solver import BranchAndBoundSolver
+from simple import SimpleBranchAndBoundSolver
+from Node_Sel_SImple import BestBoundBranchAndBoundSolver
 import pandas as pd
 import time
 import os
@@ -87,6 +89,12 @@ def run_optimization(instance_num, params, solver_type='gurobi'):
     elif solver_type == 'custom':
         bnb_solver = BranchAndBoundSolver(optimizer)
         solution = bnb_solver.solve()
+    elif solver_type == 'simple':
+        bnb_solver = SimpleBranchAndBoundSolver(optimizer)
+        solution = bnb_solver.solve()
+    elif solver_type == 'simpleNode':
+        bnb_solver =BestBoundBranchAndBoundSolver(optimizer)
+        solution = bnb_solver.solve()
     else:  # gurobi
         solution = optimizer.solve_single_stage()
     solve_time = time.time() - start_time
@@ -158,7 +166,7 @@ def run_optimization(instance_num, params, solver_type='gurobi'):
 def main():
     # Add command line argument parser
     parser = argparse.ArgumentParser(description='Solve thermal network optimization.')
-    parser.add_argument('--solver', choices=['gurobi', 'custom', 'optimized'], default='gurobi',
+    parser.add_argument('--solver', choices=['gurobi', 'custom', 'optimized', 'simple', 'simpleNode'], default='gurobi',
                         help='Choose solver: gurobi (default), custom branch & bound, or optimized branch & bound')
     args = parser.parse_args()
 

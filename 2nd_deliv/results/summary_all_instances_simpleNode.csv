@@ -1,0 +1,2 @@
+Instance,Solver,Facilities,Substations,Customers,Grid Size,Solution Time,Status,Total Cost,Open Substations,Opened Substations
+1,Simplenode Solver,3,5,8,100,460.5449631214142,Optimal,416217.898801852,4,"Sub1, Sub2, Sub3, Sub5"

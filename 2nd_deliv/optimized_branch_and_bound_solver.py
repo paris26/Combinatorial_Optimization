@@ -3,8 +3,9 @@ import heapq
 from dataclasses import dataclass
 import pyomo.environ as pyo
 from pyomo.opt import SolverFactory, SolverStatus, TerminationCondition
-from simuiated_annealing_preprocessor import SimulatedAnnealingPreprocessor
-
+from greedy_preprocessor import  GreedyHeuristicPreprocessor
+from CPLEXPreprocessor import GurobiPreprocessor
+import time
 
 @dataclass
 class OptimizedNode:
@@ -140,23 +141,17 @@ class OptimizedBranchAndBoundSolver:
             return False, float('inf'), None
 
     def preprocess(self):
-        """Run simulated annealing preprocessing"""
-        import time
+        """Run preprocessing with multiple heuristics"""
         start_time = time.time()
 
-        # Initialize and run simulated annealing
-        sa_preprocessor = SimulatedAnnealingPreprocessor(self.optimizer)
-        initial_solution, initial_cost = sa_preprocessor.run()
+        gurobi_preprocessor = GurobiPreprocessor(
+            optimizer = self.optimizer
+        )
+        #greedy_preprocessor = GreedyHeuristicPreprocessor(self.optimizer)
+        initial_solution, initial_cost = gurobi_preprocessor.preprocess()
 
-        # Update statistics
         self.search_stats['preprocessing_time'] = time.time() - start_time
         self.search_stats['preprocessing_objective'] = initial_cost
-
-        # If preprocessing found a better solution, update best solution
-        if initial_cost < self.best_objective:
-            self.best_objective = initial_cost
-            self.best_solution = initial_solution
-            print(f"Preprocessing found better solution: {initial_cost:.2f}")
 
         return initial_solution
 
